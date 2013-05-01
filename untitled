@@ -1,0 +1,41 @@
+console.log('Response Hook activated for: ' + message.id);
+if(message.articles){
+ message.articles.forEach(function(a){
+    try{
+     	a.$avgrating= a.$avgrating ? JSON.parse(a.$avgrating).All:"0";
+     }catch(e){}
+ })
+}
+console.log("Appacitive SDK loaded");
+Appacitive.session.environment = 'sandbox';
+var _sessionOptions = { "apikey": "v5VC8m933yOXgc7+LU609YriJD8itYQpQNMpFHMxXt4=", app: 'hub' }
+
+var eventId = Appacitive.eventManager.subscribe('session.success', function () {
+    console.log("Session created");
+    Appacitive.eventManager.unsubscribe(eventId);
+
+    var rooms = new Appacitive.ArticleCollection({ schema: 'room' });
+        rooms.getQuery().extendOptions({
+            pageSize: 20,
+            pageNumber:1
+        }); 
+        rooms.fetch(function() {
+            var rArticles = rooms.getAll();
+
+            message.rooms = [];
+            for(var i = 0 ; i < rArticles.length ; i = i + 1 ){
+               message.rooms.push(rArticles[i].getArticle());
+            }
+
+            done(message.id, message);
+        },function(){
+            message.rooms=[];
+            done(message.id, message);
+        });
+});
+
+Appacitive.eventManager.subscribe('session.error',function(){
+   completed(message);
+});
+
+Appacitive.session.create(_sessionOptions);
