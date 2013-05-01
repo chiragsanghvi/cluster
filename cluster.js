@@ -24,8 +24,6 @@ if (cluster.isMaster) {
       console: { log: console.log, dir: console.dir },
       completed:function(message){
         var result = JSON.stringify(message);
-        res.setHeader('Content-Length', result.length);
-        res.setHeader('Content-Type', 'application/json');
         res.statusCode = "200";
         res.end(result);
       },
